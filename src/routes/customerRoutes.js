@@ -8,14 +8,14 @@ import {
   deleteCustomer
 } from '../controllers/customercontroller.js';
 
-import { authenticate } from '../middlewares/authMiddleware.js';
+import { protect } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
 
-router.post('/',authenticate,  createCustomer);
-router.get('/', authenticate, getCustomers);
-router.get('/:id',authenticate,  getCustomerById);
-router.put('/:id',authenticate,  updateCustomer);
-router.delete('/:id',authenticate, deleteCustomer);
+router.post('/',protect,  createCustomer);
+router.get('/', protect, getCustomers);
+router.get('/:id',protect,  getCustomerById);
+router.put('/:id',protect,  updateCustomer);
+router.delete('/:id',protect, deleteCustomer);
 
 export default router;
