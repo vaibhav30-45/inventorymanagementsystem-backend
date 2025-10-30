@@ -29,7 +29,7 @@ export const getProducts = async (req, res) => {
     // Hide purchase price if user is not Super Admin
     const filtered = products.map((p) => {
       const data = p.toObject();
-      if (req.user.role !== "SuperAdmin") {
+      if (req.user.role !== "superadmin") {
         delete data.purchasePrice;
       }
       return data;

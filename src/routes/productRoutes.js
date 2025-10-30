@@ -7,14 +7,17 @@ import {
   deleteProduct,
 } from "../controllers/productController.js";
 import { authenticate } from "../middlewares/authMiddleware.js";
+import { authorizeRoles } from "../middlewares/roleMiddleware.js";
 
 const router = express.Router();
 
-// Product routes (protected)
-router.post("/", authenticate, addProduct);
+// Superadmin can add/update/delete
+router.post("/", authenticate, authorizeRoles("superadmin"), addProduct);
+router.put("/:id", authenticate, authorizeRoles("superadmin"), updateProduct);
+router.delete("/:id", authenticate, authorizeRoles("superadmin"), deleteProduct);
+
+// Everyone (admin + superadmin) can view products
 router.get("/", authenticate, getProducts);
 router.get("/:id", authenticate, getProductById);
-router.put("/:id", authenticate, updateProduct);
-router.delete("/:id", authenticate, deleteProduct);
 
 export default router;
