@@ -1,39 +1,31 @@
-import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
-import User from "../models/userModel.js";
-dotenv.config();
+const User = require('../models/userModel');
+const jwt = require('jsonwebtoken');
 
-export const loginUser = async (req, res) => {
+
+exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    console.log(" Email from request:", email);
-    console.log(" Password from request:", password);
+   
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: 'User not found' });
 
-    const user = await User.findOne({
-      email: email.trim().toLowerCase(),
-      password: password.trim(),
-    });
-
-    console.log(" User found in DB:", user);
-
-    if (!user) {
-      return res.status(401).json({ message: "Invalid credentials" });
-    }
+    if (password !== user.password)
+      return res.status(401).json({ message: 'Invalid password' });
 
     const token = jwt.sign(
-      { email: user.email, role: user.role },
+      { id: user._id, role: user.role },
       process.env.JWT_SECRET,
-      { expiresIn: "1h" }
+      { expiresIn: '1d' }
     );
 
-    res.status(200).json({
-      message: "Login successful",
+    res.json({
+      success: true,
+      message: 'Login successful',
       token,
-      user: { email: user.email, role: user.role },
+      role: user.role
     });
-  } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({ message: "Server error", error: error.message });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 };
