@@ -1,4 +1,5 @@
 import { RegularCustomer, ManualCustomer } from '../models/customerModel.js';
+import Sales from '../models/salesModel.js';
 
 const getModelByType = (type) => {
   if (type === 'Regular') return RegularCustomer;
@@ -45,7 +46,34 @@ export const createCustomer = async (req, res) => {
     const Model = getModelByType(type);
     const customer = new Model(customerData);
     await customer.save();
-    res.status(201).json({ message: 'Customer created', customer });
+
+       if (type === 'Regular') {
+      for (const purchase of customer.purchaseHistory) {
+        const sale = new Sales({
+          customerId: customer._id,
+          customerName: customer.name,
+          products: purchase.products,
+          totalAmount: purchase.totalAmount,
+          date: purchase.date,
+          paymentMethod: purchase.paymentMethod,
+          saleType: 'Regular',
+        });
+        await sale.save();
+      }
+    } else if (type === 'Manual') {
+      const purchase = customer.oneTimeTransaction;
+      const sale = new Sales({
+        customerId: customer._id,
+        customerName: customer.basicDetails?.name,
+        products: purchase.products,
+        totalAmount: purchase.totalAmount,
+        date: purchase.date,
+        paymentMethod: purchase.paymentMethod,
+        saleType: 'Manual',
+      });
+      await sale.save();
+    }
+    res.status(201).json({ message: 'Customer and Sales Entry created', customer });
 
   } catch (error) {
     res.status(500).json({ message: 'Error creating customer', error: error.message });
